@@ -59,11 +59,6 @@ def mandelbrot1(mina, maxa, minb, maxb, scale):
     print() if used else print(maxa)
 
 
-"""
-real    0m1.085s
-user    0m0.736s
-sys 0m0.004s
-"""
 def mandelbrot2(radius=1.5, centera=-0.75, centerb=0, scale=100):
     factor = radius * 2 / scale  # XXX floats not ideal?
 
@@ -119,21 +114,14 @@ def _mandelbrot3(mina, minb, stepsa, stepsb, factora, factorb):
                 x = x*x + c
                 if abs(x) > 2:
                     row[gi] = i
-                    #yield i
                     break
             else:
                 # in the set!
-                pass  #row[gi] = None
-                #yield None
+                pass  # row[gi] = None
             gi += 1
         yield row
 
 
-"""
-real    0m1.105s
-user    0m0.676s
-sys 0m0.016s
-"""
 def mandelbrot3(radius=1.5, centera=-0.75, centerb=0, scale=100):
     factor = radius * 2 / scale  # XXX floats not ideal?
     mina = centera - radius

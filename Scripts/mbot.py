@@ -1,4 +1,6 @@
 
+import sys
+
 
 def get_nums(xmin, xmax, ymin, ymax, scale):
     xscale = int(scale)
@@ -47,5 +49,4 @@ def main(*args):
             step += 1
 
 
-import sys
 main(*sys.argv[1:])
