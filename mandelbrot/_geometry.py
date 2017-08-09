@@ -1,5 +1,64 @@
 
-from ._util import as_namedtuple
+from ._util import as_namedtuple, Steps
+
+
+class Grid:
+
+    __slots__ = ('_width', '_height')
+
+    def __new__(cls, width, height=None):
+        width = Steps(width)
+        height = Steps(height) if height is not None else width
+
+        self = super().__new__(cls)
+        self._width = width
+        self._height = height
+        return self
+
+    def __len__(self):
+        return len(self.width) * len(self.height)
+
+    def __iter__(self):
+        # Iterate up the rows, left to right.
+        for j in self.height:
+            for i in self.width:
+                yield (i, j)
+
+    def __reversed__(self):
+        for j in reversed(self.height):
+            for i in reversed(self.width):
+                yield (i, j)
+
+    def __contains__(self, value):
+        try:
+            x, y = value
+        except (TypeError, ValueError):
+            return False
+        return x in self.width and y in self.height
+
+    def __getitem__(self, index):
+        if index not in self.height:
+            raise IndexError(index)
+        return self.width
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
+
+    def iter_floats(self, xstart, xend, ystart, yend):
+        for j in self.height.iter_floats(ystart, yend):
+            for i in self.width.iter_floats(xstart, xend):
+                yield (i, j)
+
+    def iter_points(self, start, end):
+        start = Point2D.from_raw(start)
+        end = Point2D.from_raw(end)
+        for i, j in self.iter_floats(start.x, end.x, start.y, end.y):
+            yield Point2D(i, j)
 
 
 @as_namedtuple('x y')

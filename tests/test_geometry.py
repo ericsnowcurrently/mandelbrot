@@ -1,7 +1,180 @@
 
 import unittest
 
-from mandelbrot._geometry import Point2D
+from mandelbrot._geometry import Grid, Point2D
+from mandelbrot._util import Steps
+
+
+class GridTests(unittest.TestCase):
+
+    def test_fields(self):
+        width = Steps(200)
+        height = Steps(300)
+        grid = Grid(width, height)
+        values = grid.width, grid.height
+
+        self.assertEqual(values, (width, height))
+
+    def test_defaults(self):
+        width = Steps(200)
+        grid = Grid(width)
+        height = grid.height
+
+        self.assertEqual(height, width)
+
+    def test_coercion(self):
+        tests = {
+                2: Steps(2),
+                3.1: Steps(3),
+                '4': Steps(4),
+                }
+        for wval, wexpected in tests.items():
+            for hval, hexpected in tests.items():
+                with self.subTest((wval, hval)):
+                    grid = Grid(wval, hval)
+                    width, height = grid.width, grid.height
+
+                    self.assertEqual(width, wexpected)
+                    self.assertEqual(height, hexpected)
+
+    def test_validation(self):
+        with self.assertRaises(TypeError):
+            Grid(-1, 3)
+        with self.assertRaises(TypeError):
+            Grid(3, -1)
+
+    def test_len(self):
+        grid = Grid(200, 300)
+        size = len(grid)
+
+        self.assertEqual(size, 60501)
+
+    def test_iter(self):
+        grid = Grid(4, 5)
+        pairs = list(grid)
+
+        self.assertEqual(pairs, [
+            (0, 0), (1, 0), (2, 0), (3, 0), (4, 0),
+            (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
+            (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
+            (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
+            (0, 4), (1, 4), (2, 4), (3, 4), (4, 4),
+            (0, 5), (1, 5), (2, 5), (3, 5), (4, 5),
+            ])
+
+    def test_reversed(self):
+        grid = Grid(4, 5)
+        pairs = list(reversed(grid))
+
+        self.assertEqual(pairs, [
+            (4, 5), (3, 5), (2, 5), (1, 5), (0, 5),
+            (4, 4), (3, 4), (2, 4), (1, 4), (0, 4),
+            (4, 3), (3, 3), (2, 3), (1, 3), (0, 3),
+            (4, 2), (3, 2), (2, 2), (1, 2), (0, 2),
+            (4, 1), (3, 1), (2, 1), (1, 1), (0, 1),
+            (4, 0), (3, 0), (2, 0), (1, 0), (0, 0),
+            ])
+
+    def test_contains_values(self):
+        return
+        grid = Grid(640, 480)
+        for x in range(-100, 1000):
+            for y in range(-50, 500):
+                with self.subTest((x, y)):
+                    found = (x, y) in grid
+
+                    if x < 0 or y < 0:
+                        self.assertFalse(found)
+                    elif x > 640 or y > 480:
+                        self.assertFalse(found)
+                    else:
+                        self.assertTrue(found)
+
+    def test_contains_supported(self):
+        grid = Grid(10, 10)
+        values = [
+                (1, 1),
+                [1, 1],
+                ]
+        for value in values:
+            with self.subTest(repr(value)):
+                found = value in grid
+
+                self.assertTrue(found)
+
+    def test_contains_unsupported(self):
+        grid = Grid(10, 10)
+        values = [
+                object(),
+                None,
+                1,
+                1.0,
+                'spam',
+                (), [], {},
+                (1,),
+                ('1', '1'),
+                '11',
+                ]
+        for value in values:
+            with self.subTest(repr(value)):
+                found = value in grid
+
+                self.assertFalse(found)
+
+    def test_getitem_values(self):
+        grid = Grid(5, 10)
+        expected = grid.width
+        for y in range(-5, 15):
+            with self.subTest(y):
+                if 0 <= y <= 10:
+                    width = grid[y]
+                    self.assertEqual(width, expected)
+                else:
+                    with self.assertRaises(IndexError):
+                        grid[y]
+
+    def test_getitem_unsupported(self):
+        grid = Grid(10, 10)
+        values = [
+                (1, 1),
+                object(),
+                None,
+                'spam',
+                ]
+        for value in values:
+            with self.subTest(repr(value)):
+                with self.assertRaises(IndexError):
+                    grid[value]
+
+    def test_iter_floats(self):
+        grid = Grid(4, 7)
+        floats = list(grid.iter_floats(-0.1, 0.9, 2.5, -1.0))
+
+        self.assertEqual(floats, [
+            (-0.1, 2.5), (0.15, 2.5), (0.40, 2.5), (0.65, 2.5), (0.9, 2.5),
+            (-0.1, 2.0), (0.15, 2.0), (0.40, 2.0), (0.65, 2.0), (0.9, 2.0),
+            (-0.1, 1.5), (0.15, 1.5), (0.40, 1.5), (0.65, 1.5), (0.9, 1.5),
+            (-0.1, 1.0), (0.15, 1.0), (0.40, 1.0), (0.65, 1.0), (0.9, 1.0),
+            (-0.1, 0.5), (0.15, 0.5), (0.40, 0.5), (0.65, 0.5), (0.9, 0.5),
+            (-0.1, 0.0), (0.15, 0.0), (0.40, 0.0), (0.65, 0.0), (0.9, 0.0),
+            (-.1, -0.5), (.15, -0.5), (.40, -0.5), (.65, -0.5), (.9, -0.5),
+            (-.1, -1.0), (.15, -1.0), (.40, -1.0), (.65, -1.0), (.9, -1.0),
+            ])
+
+    def test_iter_points(self):
+        start = Point2D(1, 2)
+        end = Point2D(3, -2)
+        grid = Grid(4, 4)
+        points = list(grid.iter_points(start, end))
+
+        P = Point2D
+        self.assertEqual(points, [
+            P(1, 2), P(1.5, 2), P(2, 2), P(2.5, 2), P(3, 2),
+            P(1, 1), P(1.5, 1), P(2, 1), P(2.5, 1), P(3, 1),
+            P(1, 0), P(1.5, 0), P(2, 0), P(2.5, 0), P(3, 0),
+            P(1, -1), P(1.5, -1), P(2, -1), P(2.5, -1), P(3, -1),
+            P(1, -2), P(1.5, -2), P(2, -2), P(2.5, -2), P(3, -2),
+            ])
 
 
 class Point2DTests(unittest.TestCase):
