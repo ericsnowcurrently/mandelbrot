@@ -1,7 +1,7 @@
 
 import unittest
 
-from mandelbrot._geometry import Grid, Point2D
+from mandelbrot._geometry import Grid, Point2D, Area
 from mandelbrot._util import Steps
 
 
@@ -328,3 +328,54 @@ class Point2DTests(unittest.TestCase):
         self.assertEqual(fields, ('x', 'y'))
         self.assertEqual(p0, 1.0)
         self.assertEqual(p1, 1.0)
+
+
+class AreaTests(unittest.TestCase):
+
+    MIN = Point2D(-1, -1)
+    MAX = Point2D(1, 1)
+
+    def test_from_radius(self):
+        Area.from_radius()
+
+    def test_from_sides(self):
+        # Note that MAX.x was passed as x1.
+        area = Area.from_sides(self.MAX.x, self.MIN.x, self.MIN.y, self.MAX.y)
+        pmin, pmax = area.min, area.max
+
+        self.assertEqual(pmin, self.MIN)
+        self.assertEqual(pmax, self.MAX)
+
+    def test_reorder(self):
+        area1 = Area(self.MIN, self.MAX)
+        area2 = Area(self.MAX, self.MIN)
+
+        self.assertEqual(area1, area2)
+
+    def test_coerce_tuples(self):
+        area = Area(tuple(self.MIN), tuple(self.MAX))
+        pmin, pmax = area
+
+        self.assertEqual(pmin, self.MIN)
+        self.assertEqual(pmax, self.MAX)
+
+    def test_coerce_strings(self):
+        area = Area(str(self.MIN), str(self.MAX))
+        pmin, pmax = area
+
+        self.assertEqual(pmin, self.MIN)
+        self.assertEqual(pmax, self.MAX)
+
+    def test_namedtuple(self):
+        area = Area(self.MIN, self.MAX)
+        triple = tuple(v for v in area)
+        pmin, pmax = area.min, area.max
+        fields = area._fields
+        a0, a1 = area[0], area[1]
+
+        self.assertEqual(triple, (self.MIN, self.MAX))
+        self.assertEqual(pmin, self.MIN)
+        self.assertEqual(pmax, self.MAX)
+        self.assertEqual(fields, ('min', 'max'))
+        self.assertEqual(a0, self.MIN)
+        self.assertEqual(a1, self.MAX)

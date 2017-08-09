@@ -154,3 +154,32 @@ class Point2D:
     @property
     def imaginary(self):
         return self.x + self.y * 1j
+
+
+@as_namedtuple('min max')
+class Area:
+
+    __slots__ = []
+
+    @classmethod
+    def from_radius(cls, radius=None, center=None):
+        radius = float(radius) if radius else 1
+        if radius <= 0:
+            raise ValueError('got non-positive radius')
+        xcenter, ycenter = Point2D.from_raw(center) or Point2D()
+
+        min = Point2D(xcenter - radius, ycenter - radius)
+        max = Point2D(xcenter + radius, ycenter + radius)
+        return cls(min, max)
+
+    @classmethod
+    def from_sides(cls, x1, x2, y1, y2):
+        return cls((x1, x2), (y1, y2))
+
+    def __new__(cls, p1, p2):
+        p1 = Point2D.from_raw(p1)
+        p2 = Point2D.from_raw(p2)
+        pmin = Point2D(min(p1.x, p2.x), min(p1.y, p2.y))
+        pmax = Point2D(max(p1.x, p2.x), max(p1.y, p2.y))
+        self = super().__new__(cls, pmin, pmax)
+        return self
