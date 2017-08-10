@@ -1,4 +1,6 @@
 
+import math
+from types import SimpleNamespace as ns
 import unittest
 
 from mandelbrot._geometry import Grid, Point2D, Area
@@ -306,14 +308,183 @@ class Point2DTests(unittest.TestCase):
 
         self.assertEqual(ptstr, '(1.0, 1.0)')
 
-    def test_imaginary(self):
+    def test_add(self):
+        point = Point2D(2, 3)
+        tests = [
+                (Point2D(1, 1), (3, 4)),
+                ((1, 1), (3, 4)),
+                ((0.5, 4.5), (2.5, 7.5)),
+                (1, (3, 4)),
+                (1.0, (3, 4)),
+                (ns(x=1, y=1), (3, 4)),
+                ]
+        for other, expected in tests:
+            with self.subTest(other):
+                result = point + other
+
+                self.assertEqual(result, expected)
+
+    def test_subtract(self):
+        point = Point2D(2, 3)
+        tests = [
+                (Point2D(1, 1), (1, 2)),
+                ((1, 1), (1, 2)),
+                ((0.5, 4.5), (1.5, -1.5)),
+                (1, (1, 2)),
+                (1.0, (1, 2)),
+                (ns(x=1, y=1), (1, 2)),
+                ]
+        for other, expected in tests:
+            with self.subTest(other):
+                result = point - other
+
+                self.assertEqual(result, expected)
+
+    def test_multiply(self):
+        point = Point2D(2, 3)
+        tests = [
+                (Point2D(1, 1), (2, 3)),
+                ((1, 1), (2, 3)),
+                ((0.5, 4.5), (1, 13.5)),
+                (1, (2, 3)),
+                (1.0, (2, 3)),
+                (ns(x=1, y=1), (2, 3)),
+                ]
+        for other, expected in tests:
+            with self.subTest(other):
+                result = point * other
+
+                self.assertEqual(result, expected)
+
+    def test_divide(self):
+        point = Point2D(2, 3)
+        tests = [
+                (Point2D(1, 1), (2, 3)),
+                ((1, 1), (2, 3)),
+                ((0.5, 6.0), (4, 0.5)),
+                (1, (2, 3)),
+                (1.0, (2, 3)),
+                (ns(x=1, y=1), (2, 3)),
+                ]
+        for other, expected in tests:
+            with self.subTest(other):
+                result = point / other
+
+                self.assertEqual(result, expected)
+
+    def test_floordiv(self):
+        point = Point2D(2, 3)
+        tests = [
+                (Point2D(1, 1), (2, 3)),
+                ((1, 1), (2, 3)),
+                ((0.4, -6.0), (4.0, -1.0)),
+                (1, (2, 3)),
+                (1.0, (2, 3)),
+                (ns(x=1, y=1), (2, 3)),
+                ]
+        for other, expected in tests:
+            with self.subTest(other):
+                result = point // other
+
+                self.assertEqual(result, expected)
+
+    def test_negate(self):
+        pa = Point2D(1, 1)
+        pb = Point2D(1, -1)
+        pc = Point2D(-1, -1)
+        pd = Point2D(-1, 1)
+        nega = -pa
+        negb = -pb
+        negc = -pc
+        negd = -pd
+
+        self.assertEqual(nega, pc)
+        self.assertEqual(negb, pd)
+        self.assertEqual(negc, pa)
+        self.assertEqual(negd, pb)
+
+    def test_abs(self):  # also distance from origin
+        tests = {
+                (0, 0): 0,
+                (1, 0): 1,
+                (0, 1): 1,
+                (-1, 0): 1,
+                (1, 1): 2**0.5,
+                (3, 4): 5,
+                }
+        for p, expected in tests.items():
+            with self.subTest(p):
+                p = Point2D(*p)
+                result = abs(p)
+
+                self.assertEqual(result, expected)
+
+    def test_invert(self):
+        point = Point2D(2, 3)
+        inv = ~point
+
+        self.assertEqual(inv, (3, 2))
+
+    def test_complex(self):
         for a in [-1, -0.5, 0, 0.5, 1]:
             for b in [-1, -0.5, 0, 0.5, 1]:
                 with self.subTest((a, b)):
                     p = Point2D(a, b)
-                    c = p.imaginary
+                    c = complex(p)
 
                     self.assertEqual(c, a + b * 1j)
+
+    def test_round(self):
+        p1 = Point2D(2.3, 3.7)
+        p2 = Point2D(-2.3, -3.7)
+        res1 = round(p1)
+        res2 = round(p2)
+
+        self.assertEqual(res1, (2, 4))
+        self.assertEqual(res2, (-2, -4))
+
+    def test_ceil(self):
+        p1 = Point2D(2.3, 3.7)
+        p2 = Point2D(-2.3, -3.7)
+        res1 = math.ceil(p1)
+        res2 = math.ceil(p2)
+
+        self.assertEqual(res1, (3, 4))
+        self.assertEqual(res2, (-2, -3))
+
+    def test_floor(self):
+        p1 = Point2D(2.3, 3.7)
+        p2 = Point2D(-2.3, -3.7)
+        res1 = math.floor(p1)
+        res2 = math.floor(p2)
+
+        self.assertEqual(res1, (2, 3))
+        self.assertEqual(res2, (-3, -4))
+
+    def test_trunc(self):
+        p1 = Point2D(2.3, 3.7)
+        p2 = Point2D(-2.3, -3.7)
+        res1 = math.trunc(p1)
+        res2 = math.trunc(p2)
+
+        self.assertEqual(res1, (2, 3))
+        self.assertEqual(res2, (-2, -3))
+
+    def test_quadrance(self):
+        tests = {
+                (0, 0): 0,
+                (1, 0): 1,
+                (0, 1): 1,
+                (-1, 0): 1,
+                (1, 1): 2,
+                (3, 4): 25,
+                }
+        for p, expected in tests.items():
+            with self.subTest(p):
+                p = Point2D(*p)
+                result = p.quadrance
+
+                self.assertEqual(result, expected)
 
     def test_namedtuple(self):
         p = Point2D(1.0, 1.0)
@@ -365,6 +536,12 @@ class AreaTests(unittest.TestCase):
 
         self.assertEqual(pmin, self.MIN)
         self.assertEqual(pmax, self.MAX)
+
+    def test_delta(self):
+        area = Area(self.MIN, self.MAX)
+        delta = area.delta
+
+        self.assertEqual(delta, (2, 2))
 
     def test_namedtuple(self):
         area = Area(self.MIN, self.MAX)

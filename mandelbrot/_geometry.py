@@ -1,4 +1,6 @@
 
+import math
+
 from ._util import as_namedtuple, Steps
 
 
@@ -151,9 +153,74 @@ class Point2D:
     def __str__(self):
         return '({}, {})'.format(*self)
 
-    @property
-    def imaginary(self):
+    def _resolve_other(self, other):
+        try:
+            other_x, other_y = other
+        except (TypeError, ValueError):
+            try:
+                other_x = other.x
+                other_y = other.y
+            except AttributeError:
+                other_x = other_y = other
+        return other_x, other_y
+
+    def __add__(self, other):
+        other_x, other_y = self._resolve_other(other)
+        x = self.x + other_x
+        y = self.y + other_y
+        return self._replace(x=x, y=y)
+
+    def __sub__(self, other):
+        other_x, other_y = self._resolve_other(other)
+        x = self.x - other_x
+        y = self.y - other_y
+        return self._replace(x=x, y=y)
+
+    def __mul__(self, other):  # dot product
+        other_x, other_y = self._resolve_other(other)
+        x = self.x * other_x
+        y = self.y * other_y
+        return self._replace(x=x, y=y)
+
+    def __truediv__(self, other):
+        other_x, other_y = self._resolve_other(other)
+        x = self.x / other_x
+        y = self.y / other_y
+        return self._replace(x=x, y=y)
+
+    def __floordiv__(self, other):
+        other_x, other_y = self._resolve_other(other)
+        x = self.x // other_x
+        y = self.y // other_y
+        return self._replace(x=x, y=y)
+
+    def __neg__(self):
+        return self._replace(x=-self.x, y=-self.y)
+
+    def __abs__(self):
+        return (self.x * self.x + self.y * self.y) ** 0.5
+
+    def __invert__(self):
+        return self._replace(x=self.y, y=self.x)
+
+    def __complex__(self):
         return self.x + self.y * 1j
+
+    def __round__(self, *args):
+        return self._replace(x=round(self.x, *args), y=round(self.y, *args))
+
+    def __ceil__(self):
+        return self._replace(x=math.ceil(self.x), y=math.ceil(self.y))
+
+    def __floor__(self):
+        return self._replace(x=math.floor(self.x), y=math.floor(self.y))
+
+    def __trunc__(self):
+        return self._replace(x=math.trunc(self.x), y=math.trunc(self.y))
+
+    @property
+    def quadrance(self):
+        return self.x * self.x + self.y * self.y
 
 
 @as_namedtuple('min max')
@@ -183,3 +250,7 @@ class Area:
         pmax = Point2D(max(p1.x, p2.x), max(p1.y, p2.y))
         self = super().__new__(cls, pmin, pmax)
         return self
+
+    @property
+    def delta(self):
+        return self.max - self.min
