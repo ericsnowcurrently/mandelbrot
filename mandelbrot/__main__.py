@@ -73,3 +73,26 @@ def main(radius=1.5, center=Point2D(-0.75, 0), steps=None, *,
 if __name__ == '__main__':
     args = parse_args()
     main(**vars(args))
+
+
+"""
+def mandelbrot_mpl(radius=1.5, centera=-0.75, centerb=0, scale=400):
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure(figsize=(10, 10), dpi=72)
+    ax = fig.add_axes([0.0, 0.0, 1.0, 1.0], frameon=False, aspect=1)
+
+    candidates = _iter_c5(radius, centera, centerb, scale)
+    for c, i in _mandelbrot(candidates, MAX_ITER):
+        plt.plot(c.real, c.imag)
+
+    # Shaded rendering
+    #light = matplotlib.colors.LightSource(azdeg=315, altdeg=10)
+    #M = light.shade(M, cmap=plt.cm.hot, vert_exag=1.5,
+    #                norm=colors.PowerNorm(0.3), blend_mode='hsv')
+
+    #plt.imshow(M, extent=[xmin, xmax, ymin, ymax], interpolation="bicubic")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
+"""
