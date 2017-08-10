@@ -25,6 +25,10 @@ def as_namedtuple(cls, fields=None):
     return sub
 
 
+# XXX steps as factor of 2?
+# XXX factor as power of 2?
+
+
 class Steps(int):
 
     __slots__ = ()
